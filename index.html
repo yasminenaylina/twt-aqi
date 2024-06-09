@@ -2,57 +2,93 @@
 <html>
 <head>
   <title>AQI Map</title>
-  <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=GetMap"></script>
   <style>
     #map {
-      width: 800px;
-      height: 600px;
+      height: 380px;
+      position: relative;
     }
   </style>
 </head>
 <body>
-  <input id="location" type="text" placeholder="Enter a location" />
-  <button id="submit">Get AQI</button>
+  <input id="search-box" type="text" placeholder="Enter a location" />
+  <button id="search-btn">Search</button>
   <div id="map"></div>
 
-  <script>
-    var map;
-    var aqiLayer;
+  <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=initBingMap" async defer></script>
 
-    function GetMap() {
-      map = new Microsoft.Maps.Map(document.getElementById('map'), {
-        credentials: 'Ar-x_oaZ5J-md-Wra2_LJEG3NJt2uG0-HyqDMad50QptHo52WOTGIJYrnl83_nZw'
+  <script>
+    function initBingMap() {
+      var map = new Microsoft.Maps.Map(document.getElementById('map'), {
+        credentials: 'Ar-x_oaZ5J-md-Wra2_LJEG3NJt2uG0-HyqDMad50QptHo52WOTGIJYrnl83_nZw',
+        center: new Microsoft.Maps.Location(51.505, -0.09),
+        zoom: 11,
       });
 
-      aqiLayer = new Microsoft.Maps.Layer();
-      map.layers.insert(aqiLayer);
+      var options = {
+        uriConstructor: "https://tiles.aqicn.org/tiles/usepa-aqi//{zoom}/{x}/{y}.png?token=884b4fa99343302767e94fbca92f5505b1ac4578",
+        minZoom: 1,
+        maxZoom: 15
+      };
+      var waqiTileSource = new Microsoft.Maps.TileSource(options);
+      var waqiTilelayer = new Microsoft.Maps.TileLayer({ mercator: waqiTileSource });
+      map.layers.insert(waqiTilelayer);
+
+      document.getElementById('search-btn').addEventListener('click', function() {
+        var searchQuery = document.getElementById('search-box').value.trim();
+        searchLocation(searchQuery);
+      });
     }
 
-    document.getElementById('submit').addEventListener('click', function() {
-      var location = document.getElementById('location').value.trim();
-      fetch(`https://tiles.aqicn.org/tiles/usepa-aqi/{z}/{x}/{y}.png?token=b1645b13-fa2f-4d0c-8fa9-b98cbc41d7f1`)
-        .then(response => response.json())
-        .then(data => {
+    function searchLocation(searchQuery) {
+      var searchRequest = {
+        where: searchQuery,
+        callback: function(result) {
+          if (result.results.length > 0) {
+            var location = result.results[0].location;
+            map.setView({
+              center: new Microsoft.Maps.Location(location.latitude, location.longitude),
+              zoom: 11
+            });
+            getAQIData(location.latitude, location.longitude);
+          }
+        }
+      };
+      Microsoft.Maps.SearchManager.search(searchRequest);
+    }
+
+    function getAQIData(lat, lon) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', `https://api.iqair.com/v2/latest?lat=${lat}&lon=${lon}&key=884b4fa99343302767e94fbca92f5505b1ac4578`, true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          var data = JSON.parse(xhr.responseText);
           var aqiValue = data.results[0].measurements[0].value;
           var aqiCategory = getAQICategory(aqiValue);
 
-          var pushpin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(data.results[0].coordinates.latitude, data.results[0].coordinates.longitude), {
+          // Add a pushpin to the map with the AQI data
+          var pushpin = new Microsoft.Maps.Pushpin(new Microsoft.Maps.Location(lat, lon), {
             title: `AQI: ${aqiValue}`,
             description: `AQI Category: ${aqiCategory}`
           });
-          aqiLayer.pushpins.push(pushpin);
-        });
-    });
+          map.entities.push(pushpin);
+        }
+      };
+      xhr.send();
+    }
 
     function getAQICategory(aqiValue) {
-      // Implement AQI category logic here
-      // For example:
       if (aqiValue < 50) {
         return 'Good';
       } else if (aqiValue < 100) {
         return 'Moderate';
-      } else {
+      } else if (aqiValue < 150) {
+        return 'Unhealthy for sensitive groups';
+      } else if (aqiValue < 200) {
         return 'Unhealthy';
+      } else if (aqiValue < 300) {
+        return 'Very unhealthy';
+      } else {
+        return 'Hazardous';
       }
     }
   </script>

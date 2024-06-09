@@ -1,35 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SEAir - SEA Air Quality Index</title>
-        <link rel="stylesheet" href="styles.css">
-        <script type="text/javascript" src="script.js"></script>
-    </head>
-
-    <body>
-        <div class="aqi-website">
-            <div class="container">
-                <h3 class="brand">SEA AQI</h3>
-            </div>
-            <h1 class="state">Kuala Lumpur</h1>
-            <div class="country-time">
-                <h1 class="country">Malaysia</h1>
-            </div>
-        </div>
-
-        <div class="panel">
-            <form id="locationInput">
-                <input
-                type="text"
-                class="search"
-                placeholder="Search Location..."/>
-
-                <button type="submit" class="submit">Search
-                </button>
-            </form>
-        </div>
-    </body>
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bing Maps Example</title>
+    <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?key=Ar-x_oaZ5J-md-Wra2_LJEG3NJt2uG0-HyqDMad50QptHo52WOTGIJYrnl83_nZw"></script>
+</head>
+<body>
+    <div id="map" style="width: 600px; height: 400px;"></div>
+    <script>
+        function loadMap() {
+            var map = new Microsoft.Maps.Map('#map', {
+                center: new Microsoft.Maps.Location(47.6062, -122.3321), // Example coordinates (Seattle, WA)
+                zoom: 10
+            });
+        }
+        Microsoft.Maps.loadModule('Microsoft.Maps.Map', { callback: loadMap });
+    </script>
+</body>
 </html>

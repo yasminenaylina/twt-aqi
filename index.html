@@ -3,58 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map and AQI Widget</title>
-    <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?key=Ar-x_oaZ5J-md-Wra2_LJEG3NJt2uG0-HyqDMad50QptHo52WOTGIJYrnl83_nZw"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Air Quality Widget</title>
 </head>
 <body>
-    <h1>Enter a Location</h1>
-    <input type="text" id="location" placeholder="Enter location">
-    <button onclick="getMapAndAQI()">Show Map and AQI</button>
-    <div id="map" style="width: 600px; height: 400px;"></div>
-    <div id="aqi"></div>
+    <h1>Air Quality Information</h1>
+    <label for="location">Enter a Location:</label>
+    <input type="text" id="location" placeholder="Enter a city name">
+    <button onclick="getAirQuality()">Get Air Quality</button>
+    <div id="result"></div>
 
     <script>
-        function getMapAndAQI() {
-            var location = document.getElementById('location').value;
-            getCoordinates(location);
-        }
+        function getAirQuality() {
+            const location = document.getElementById('location').value;
+            const apiKey = 'b1645b13-fa2f-4d0c-8fa9-b98cbc41d7f1';
+            const apiUrl = `https://api.airvisual.com/v2/city?city=${location}&key=${apiKey}`;
 
-        function getCoordinates(location) {
-            var bingMapsKey = 'Ar-x_oaZ5J-md-Wra2_LJEG3NJt2uG0-HyqDMad50QptHo52WOTGIJYrnl83_nZw';
-            var geocodeUrl = `http://dev.virtualearth.net/REST/v1/Locations?query=${location}&key=${bingMapsKey}`;
-
-            $.get(geocodeUrl, function(data) {
-                var coords = data.resourceSets[0].resources[0].point.coordinates;
-                var lat = coords[0];
-                var lon = coords[1];
-                showMap(lat, lon);
-                getAQI(lat, lon);
-            });
-        }
-
-        function showMap(lat, lon) {
-            var map = new Microsoft.Maps.Map('#map', {
-                center: new Microsoft.Maps.Location(lat, lon),
-                zoom: 10
-            });
-            var center = map.getCenter();
-            var pin = new Microsoft.Maps.Pushpin(center, {
-                title: 'Location',
-                subTitle: 'Your entered location',
-                text: '1'
-            });
-            map.entities.push(pin);
-        }
-
-        function getAQI(lat, lon) {
-            var aqiApiKey = 'b1645b13-fa2f-4d0c-8fa9-b98cbc41d7f1';
-            var aqiUrl = `https://api.airvisual.com/v2/nearest_city?lat=${lat}&lon=${lon}&key=${aqiApiKey}`;
-
-            $.get(aqiUrl, function(data) {
-                var aqi = data.data.current.pollution.aqius;
-                document.getElementById('aqi').innerHTML = `AQI: ${aqi}`;
-            });
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const airQuality = data.data.current.pollution;
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.innerHTML = `
+                        <h2>Air Quality in ${location}</h2>
+                        <p>AQI: ${airQuality.aqius}</p>
+                        <p>PM2.5: ${airQuality.pm25} µg/m³</p>
+                        <p>PM10: ${airQuality.pm10} µg/m³</p>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error fetching air quality data:', error);
+                });
         }
     </script>
 </body>

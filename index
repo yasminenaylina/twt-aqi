@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SEAir - SEA Air Quality Index</title>
+        <link rel="stylesheet" href="styles.css">
+        <script type="text/javascript" src="script.js"></script>
+    </head>
+
+    <body>
+        <div class="aqi-website">
+            <div class="container">
+                <h3 class="brand">SEA AQI</h3>
+            </div>
+            <h1 class="state">Kuala Lumpur</h1>
+            <div class="country-time">
+                <h1 class="country">Malaysia</h1>
+            </div>
+        </div>
+
+        <div class="panel">
+            <form id="locationInput">
+                <input
+                type="text"
+                class="search"
+                placeholder="Search Location..."/>
+
+                <button type="submit" class="submit">Search
+                </button>
+            </form>
+        </div>
+    </body>
+
+</html>
